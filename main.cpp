@@ -13,7 +13,8 @@
 using namespace std;
 
 void print_use(string);
-void print_data(const vector<byte>&);
+template<class T>
+void print_data(const T&);
 string bin_string(byte);
 
 int main(int argc, char *argv[])
@@ -39,7 +40,8 @@ void print_use(string n)
 	cout << "Usage: " << n << " <filename>" << endl;
 }
 
-void print_data(const vector<byte> &data)
+template<class T>
+void print_data(const T &data)
 {
 	int i = 0;
 	cout << "Address  Hex   Binary" << endl;
