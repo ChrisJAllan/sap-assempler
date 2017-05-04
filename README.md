@@ -17,26 +17,29 @@ The instruction set is:
 	0xF HLT
 
 Features:
-* single-line comments
-* labels
+* Single-line comments
+* Labels
+* Raw data
+* Data and arguments can be in decimal, hex, or octal
 
 TODO:
-* Raw data
 * Variables
-
+* File output 
 
 Example input file:
 
 	// int f = 15;
 	// do { f -= 2; } while (f >= 0);
 	(INIT)
-		LDI 0xF    // f = 15;
+		LDA (F_INIT) // f = F_INIT;
 		STA 0xF
 	(LOOP)
-		LDA 0xF    // f -= 2;
+		LDA 0xF      // f -= 2;
 		SBI 0x2
 		STA 0xF
 		OUT
-		JGT (LOOP) // if (f > 0) goto (LOOP)
-		JZ  (LOOP) // else if (f == 0) goto (LOOP)
-		HLT        // else HALT
+		JGT (LOOP)   // if (f > 0) goto (LOOP)
+		JZ  (LOOP)   // else if (f == 0) goto (LOOP)
+		HLT          // else HALT
+	(F_INIT)
+		15

@@ -15,7 +15,6 @@ public:
 	const vector<byte>& mcode() const;
 	
 	bool good() const;
-	bool fail() const;
 	operator bool() const;
 	
 private:
@@ -24,6 +23,7 @@ private:
 	bool _fail;
 	
 	byte stringtomcode(string);
+	void fail(string reason);
 };
 
 #endif // ASSEMBLER_H
