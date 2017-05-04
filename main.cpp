@@ -14,6 +14,7 @@ using namespace std;
 
 void print_use(string);
 void print_data(const vector<byte>&);
+string bin_string(byte);
 
 int main(int argc, char *argv[])
 {
@@ -41,9 +42,21 @@ void print_use(string n)
 void print_data(const vector<byte> &data)
 {
 	int i = 0;
+	cout << "Address  Hex   Binary" << endl;
 	for (byte b : data) {
-		cout << boost::format("0x%02x") % i << " " << boost::format("0x%02x") % (int) b << endl;
+		cout << boost::format("0x%02X     0x%02X  %s") % i % static_cast<int>(b) % bin_string(b) << endl;
 		i++;
 	}
+}
+
+string bin_string(byte b)
+{
+	boost::format fmt { "%i%i%i%i %i%i%i%i" };
+	
+	for (int i = 7; i >= 0; --i) {
+		fmt % (b >> i & 1);
+	}
+	
+	return fmt.str();
 }
 
