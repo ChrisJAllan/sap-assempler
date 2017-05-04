@@ -1,5 +1,5 @@
 /**
- * Assembler for SAP 1.5
+ * Assembler for a modified SAP-1 computer.
  */
 
 #include <iomanip>
@@ -12,12 +12,13 @@
 
 using namespace std;
 
-void print_use();
+void print_use(string);
+void print_data(const vector<byte>&);
 
 int main(int argc, char *argv[])
 {
 	if (argc < 2) {
-		print_use();
+		print_use(argv[0]);
 		return -1;
 	}
 	
@@ -26,20 +27,23 @@ int main(int argc, char *argv[])
 	Assembler a { arg };
 	
 	if (a.good()) {
-		cout << hex << showbase;
-		int i = 0;
-		for (byte b : a.mcode()) {
-			cout << boost::format("0x%02x") % i << " " << boost::format("0x%02x") % (int) b << endl;
-			i++;
-		}
+		print_data(a.mcode());
 	}
-	
 	
 	return 0;
 }
 
-void print_use()
+void print_use(string n)
 {
-	
+	cout << "Usage: " << n << " <filename>" << endl;
+}
+
+void print_data(const vector<byte> &data)
+{
+	int i = 0;
+	for (byte b : data) {
+		cout << boost::format("0x%02x") % i << " " << boost::format("0x%02x") % (int) b << endl;
+		i++;
+	}
 }
 
