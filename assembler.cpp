@@ -30,8 +30,7 @@ Assembler::Assembler(string filename)
 	ifstream file { filename };
 	
 	if (file.fail()) {
-		cerr << "Problem loading file " << filename << endl;
-		_fail = true;
+		fail("Problem loading file " + filename);
 	}
 	
 	// Load all assembly and labels
@@ -66,9 +65,6 @@ auto Assembler::mcode() const -> const vector<byte>&
 bool Assembler::good() const
 { return !_fail; }
 
-bool Assembler::fail() const
-{ return _fail; }
-
 Assembler::operator bool() const
 { return !_fail; }
 
@@ -80,8 +76,7 @@ byte Assembler::stringtomcode(string str)
 	auto next = tok.begin();
 	
 	if (OPCODES.count(*next) == 0) {
-		cerr << "Opcode " << *next << " not found." << endl;
-		_fail = true;
+		fail("Opcode " + *next + " not found.");
 		return 0;
 	}
 	
@@ -103,5 +98,11 @@ byte Assembler::stringtomcode(string str)
 	
 	mcode |= arg;
 	return mcode;
+}
+
+void Assembler::fail(string reason)
+{
+	_fail = true;
+	cerr << reason << endl;
 }
 
