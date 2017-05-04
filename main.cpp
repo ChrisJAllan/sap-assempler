@@ -23,9 +23,9 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 	
-	string arg { argv[1] };
+	string arg(argv[1]);
 	
-	Assembler a { arg };
+	Assembler a(arg);
 	
 	if (a.good()) {
 		print_data(a.mcode());
@@ -51,7 +51,7 @@ void print_data(const vector<byte> &data)
 
 string bin_string(byte b)
 {
-	boost::format fmt { "%i%i%i%i %i%i%i%i" };
+	boost::format fmt("%i%i%i%i %i%i%i%i");
 	
 	for (int i = 7; i >= 0; --i) {
 		fmt % (b >> i & 1);

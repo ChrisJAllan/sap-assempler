@@ -27,14 +27,14 @@ Assembler::Assembler(string filename)
 {
 	vector<string> assembly;
 	
-	ifstream file { filename };
+	ifstream file(filename);
 	
 	if (file.fail()) {
-		fail("Problem loading file " + filename);
+		fail("File '" + filename + "' not found.");
 	}
 	
 	// Load all assembly and labels
-	while (!file.eof()) {
+	while (!file.eof() && !file.fail()) {
 		// Remove comments and whitespace
 		string line;
 		getline(file, line);
@@ -71,13 +71,13 @@ Assembler::operator bool() const
 byte Assembler::stringtomcode(string str)
 {
 	byte mcode, arg;
-	boost::char_separator<char> func { " " };
+	boost::char_separator<char> func(" ");
 	boost::tokenizer<boost::char_separator<char>> tok(str, func);
 	auto next = tok.begin();
 	
 	// Raw data
 	if (isdigit(next->front())) {
-		mcode = stoi(*next, 0, 0);
+		mcode = static_cast<byte>(stoi(*next, 0, 0));
 	}
 	// Opcode
 	else if (OPCODES.count(*next) == 0) {
@@ -88,18 +88,25 @@ byte Assembler::stringtomcode(string str)
 		mcode = OPCODES.at(*next);
 	}
 	
+	++next;
+	
 	// No arg
-	if (++next == tok.end()) {
+	if (next == tok.end()) {
 		return mcode;
 	}
 	
 	// Label arg
 	if (next->front() == '(' && next->back() == ')') {
+		if (labels.count(*next) == 0) {
+			fail("Label " + *next + " not found.");
+			return 0;
+		}
+		
 		arg = 0x0F & labels.at(*next);
 	}
 	// Numeric arg
 	else {
-		arg = 0x0F & stoi(*next, 0, 0);
+		arg = 0x0F & static_cast<byte>(stoi(*next, 0, 0));
 	}
 	
 	mcode |= arg;
