@@ -40,3 +40,4 @@ Example input file:
 		JGT (LOOP) // if (f > 0) goto (LOOP)
 		JZ  (LOOP) // else if (f == 0) goto (LOOP)
 		HLT        // else HALT
+

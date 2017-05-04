@@ -75,12 +75,18 @@ byte Assembler::stringtomcode(string str)
 	boost::tokenizer<boost::char_separator<char>> tok(str, func);
 	auto next = tok.begin();
 	
-	if (OPCODES.count(*next) == 0) {
+	// Raw data
+	if (isdigit(next->front())) {
+		mcode = stoi(*next, 0, 0);
+	}
+	// Opcode
+	else if (OPCODES.count(*next) == 0) {
 		fail("Opcode " + *next + " not found.");
 		return 0;
 	}
-	
-	mcode = OPCODES.at(*next);
+	else {
+		mcode = OPCODES.at(*next);
+	}
 	
 	// No arg
 	if (++next == tok.end()) {
