@@ -22,24 +22,23 @@ Features:
 * Raw data
 * Data and arguments can be in decimal, hex, or octal
 * File output
-
-TODO:
-* Variables 
+* Variables
 
 Example input file:
 
-	// int f = 15;
-	// do { f -= 2; } while (f >= 0);
-	(INIT)
-		LDA (F_INIT) // f = F_INIT;
-		STA 0xF
-	(LOOP)
-		LDA 0xF      // f -= 2;
+	// int i = 15;
+	// do { i -= 2; } while (i >= 0);
+	$I_INIT = 15
+	$i
+	INIT:
+		LDA $I_INIT // i = I_INIT;
+		STA $i
+	LOOP:
+		LDA $i      // i -= 2;
 		SBI 0x2
-		STA 0xF
+		STA $i
 		OUT
-		JGT (LOOP)   // if (f > 0) goto (LOOP)
-		JZ  (LOOP)   // else if (f == 0) goto (LOOP)
-		HLT          // else HALT
-	(F_INIT)
-		15
+		JGT LOOP    // if (i > 0) goto LOOP
+		JZ  LOOP    // else if (i == 0) goto LOOP
+		HLT         // else HALT
+
