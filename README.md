@@ -21,10 +21,10 @@ Features:
 * Labels
 * Raw data
 * Data and arguments can be in decimal, hex, or octal
+* File output
 
 TODO:
-* Variables
-* File output 
+* Variables 
 
 Example input file:
 
