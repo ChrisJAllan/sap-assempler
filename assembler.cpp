@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <utility>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/tokenizer.hpp>
@@ -29,6 +30,10 @@ Assembler::Assembler(string filename)
 	
 	ifstream file(filename);
 	
+	size_t var_count = 0;
+	
+	_mcode.fill(stringtomcode("NOP"));
+	
 	if (file.fail()) {
 		fail("File '" + filename + "' not found.");
 	}
@@ -46,24 +51,41 @@ Assembler::Assembler(string filename)
 			continue;
 		}
 		
-		if (line.front() == '(' && line.back() == ')') {
+		// Labels
+		if (   (line.front() == '(' && line.back() == ')')
+		    || (line.front() == '.')) {
 			labels.insert(make_pair(line, assembly.size()));
+			continue;
+		}
+		if (line.back() == ':') {
+			labels.insert(make_pair(line.substr(0, line.size() - 1), assembly.size()));
+			continue;
+		}
+		
+		// Variables
+		if (line.front() == '$') {
+			size_t var_pos = 16 - (++var_count);
+			auto var = parse_var(line);
+			
+			labels.insert(make_pair(var.first, var_pos));
+			_mcode[var_pos] = var.second;
+			
 			continue;
 		}
 		
 		assembly.push_back(line);
 	}
 	
-	if (assembly.size() > 16) {
+	if (assembly.size() + var_count > 16) {
 		fail("Program too long: " + to_string(assembly.size()) + " bytes.");
 	}
 	
-	for (size_t i = 0; i < 16; ++i) {
-		_mcode[i] = stringtomcode((i < assembly.size() ? assembly[i] : "NOP"));
+	for (size_t i = 0; i < assembly.size(); ++i) {
+		_mcode[i] = stringtomcode(assembly[i]);
 	}
 }
 
-auto Assembler::mcode() const -> const bytes&
+auto Assembler::mcode() const -> const ram_t&
 { return _mcode; }
 
 bool Assembler::good() const
@@ -99,18 +121,27 @@ byte Assembler::stringtomcode(string str)
 		return mcode;
 	}
 	
-	// Label arg
-	if (next->front() == '(' && next->back() == ')') {
+	// Numeric arg
+	if (isdigit(next->front())) {
+		arg = 0x0F & static_cast<byte>(stoi(*next, 0, 0));
+	}
+	// Label or variable arg
+	 else {
+		string label;
+		
+		if (   (next->front() == '(' && next->back() == ')')
+		    || (next->front() == '.')) {
+			label = *next;
+		}
+		else {
+			label = *next + ":";
+		}
 		if (labels.count(*next) == 0) {
 			fail("Label " + *next + " not found.");
 			return 0;
 		}
 		
 		arg = 0x0F & labels.at(*next);
-	}
-	// Numeric arg
-	else {
-		arg = 0x0F & static_cast<byte>(stoi(*next, 0, 0));
 	}
 	
 	mcode |= arg;
@@ -121,5 +152,27 @@ void Assembler::fail(string reason)
 {
 	_fail = true;
 	cerr << reason << endl;
+}
+
+auto Assembler::parse_var(string line) -> pair<string, byte>
+{
+	boost::char_separator<char> func(" ");
+	boost::tokenizer<boost::char_separator<char>> tok(line, func);
+	string name;
+	byte val = 0;
+	
+	auto next = tok.begin();
+	
+	name = *next;
+	
+	if (++next != tok.end() && ++next != tok.end()) {
+		if (!isdigit(next->front())) {
+			fail("Invlid value for variable: " + *next);
+			return make_pair("", 0);
+		}
+		val = static_cast<byte>(stoi(*next, 0, 0));
+	}
+	
+	return make_pair(name, val);
 }
 
