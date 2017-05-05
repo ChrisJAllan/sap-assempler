@@ -15,9 +15,8 @@ using namespace std;
 
 void print_use(string);
 
-void print_data(const bytes&);
-
-void write_data(string filename, const bytes&);
+void print_data(const ram_t&);
+void write_data(string filename, const ram_t&);
 
 string bin_string(byte);
 
@@ -48,7 +47,7 @@ void print_use(string n)
 	cout << "Usage: " << n << " in_file [out_file]" << endl;
 }
 
-void print_data(const bytes &data)
+void print_data(const ram_t &data)
 {
 	int i = 0;
 	cout << "Address  Hex   Binary" << endl;
@@ -58,7 +57,7 @@ void print_data(const bytes &data)
 	}
 }
 
-void write_data(string filename, const bytes& data)
+void write_data(string filename, const ram_t& data)
 {
 	ofstream file(filename, ios_base::binary);
 	
