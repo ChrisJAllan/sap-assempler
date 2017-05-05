@@ -54,12 +54,16 @@ Assembler::Assembler(string filename)
 		assembly.push_back(line);
 	}
 	
-	for (string line : assembly) {
-		_mcode.push_back(stringtomcode(line));
+	if (assembly.size() > 16) {
+		fail("Program too long: " + to_string(assembly.size()) + " bytes.");
+	}
+	
+	for (size_t i = 0; i < 16; ++i) {
+		_mcode[i] = stringtomcode((i < assembly.size() ? assembly[i] : "NOP"));
 	}
 }
 
-auto Assembler::mcode() const -> const vector<byte>&
+auto Assembler::mcode() const -> const bytes&
 { return _mcode; }
 
 bool Assembler::good() const

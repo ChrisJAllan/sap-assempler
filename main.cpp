@@ -2,6 +2,7 @@
  * Assembler for a modified SAP-1 computer.
  */
 
+#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <string>
@@ -13,7 +14,11 @@
 using namespace std;
 
 void print_use(string);
-void print_data(const vector<byte>&);
+
+void print_data(const bytes&);
+
+void write_data(string filename, const bytes&);
+
 string bin_string(byte);
 
 int main(int argc, char *argv[])
@@ -31,21 +36,34 @@ int main(int argc, char *argv[])
 		print_data(a.mcode());
 	}
 	
+	if (argc > 2) {
+		write_data(argv[2], a.mcode());
+	}
+	
 	return 0;
 }
 
 void print_use(string n)
 {
-	cout << "Usage: " << n << " <filename>" << endl;
+	cout << "Usage: " << n << " in_file [out_file]" << endl;
 }
 
-void print_data(const vector<byte> &data)
+void print_data(const bytes &data)
 {
 	int i = 0;
 	cout << "Address  Hex   Binary" << endl;
 	for (byte b : data) {
 		cout << boost::format("0x%02X     0x%02X  %s") % i % static_cast<int>(b) % bin_string(b) << endl;
 		i++;
+	}
+}
+
+void write_data(string filename, const bytes& data)
+{
+	ofstream file(filename, ios_base::binary);
+	
+	for (byte b : data) {
+		file << b;
 	}
 }
 
