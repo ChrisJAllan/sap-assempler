@@ -18,7 +18,9 @@ const map<string, byte> OPCODES = {
     {"JZ",  0x70},
     {"LDI", 0x80},
     {"ADI", 0x90},
+    {"INC", 0x91},
     {"SBI", 0xA0},
+    {"DEC", 0xA1},
     {"OUT", 0xE0},
     {"HLT", 0xF0}
 };
