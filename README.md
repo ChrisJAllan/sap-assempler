@@ -12,7 +12,9 @@ The instruction set is:
 	0x7 JZ     if (A == 0) goto X
 	0x8 LDI    A = X
 	0x9 ADI    A += X
+	    INC    A += 1 (Alias for ADI 1)
 	0xA SBI    A -= X
+	    DEC    A -= 1 (Alias for DEC 1)
 	0xE OUT
 	0xF HLT
 
