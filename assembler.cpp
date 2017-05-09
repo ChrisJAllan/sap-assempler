@@ -54,9 +54,8 @@ Assembler::Assembler(string filename)
 		}
 		
 		// Labels
-		if (   (line.front() == '(' && line.back() == ')')
-		    || (line.front() == '.')) {
-			labels.insert(make_pair(line, assembly.size()));
+		if (line.front() == '(' && line.back() == ')') {
+			labels.insert(make_pair(line.substr(1, line.size() - 2), assembly.size()));
 			continue;
 		}
 		if (line.back() == ':') {
@@ -129,15 +128,6 @@ byte Assembler::stringtomcode(string str)
 	}
 	// Label or variable arg
 	 else {
-		string label;
-		
-		if (   (next->front() == '(' && next->back() == ')')
-		    || (next->front() == '.')) {
-			label = *next;
-		}
-		else {
-			label = *next + ":";
-		}
 		if (labels.count(*next) == 0) {
 			fail("Label " + *next + " not found.");
 			return 0;
@@ -165,7 +155,7 @@ auto Assembler::parse_var(string line) -> pair<string, byte>
 	
 	auto next = tok.begin();
 	
-	name = *next;
+	name = next->substr(1, string::npos);
 	
 	if (++next != tok.end() && ++next != tok.end()) {
 		if (!isdigit(next->front())) {
