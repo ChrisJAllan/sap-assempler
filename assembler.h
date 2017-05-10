@@ -22,9 +22,9 @@ private:
 	ram_t _mcode;
 	bool _fail;
 	
-	byte stringtomcode(string);
-	pair<string, byte> parse_var(string line);
-	void fail(string reason);
+	byte stringtomcode(string, size_t ln);
+	pair<string, byte> parse_var(string line, size_t ln);
+	void fail(string reason, size_t ln);
 };
 
 #endif // ASSEMBLER_H

@@ -25,26 +25,32 @@ const map<string, byte> OPCODES = {
     {"HLT", 0xF0}
 };
 
+const byte M_SIZE = 16;
+
 Assembler::Assembler(string filename)
     : _fail(false)
 {
-	vector<string> assembly;
+	map<size_t, string> assembly;
 	
 	ifstream file(filename);
 	
 	size_t var_count = 0;
+	size_t line_num = 0;
 	
-	_mcode.fill(stringtomcode("NOP"));
+	_mcode.fill(stringtomcode("NOP", 0));
 	
 	if (file.fail()) {
-		fail("File '" + filename + "' not found.");
+		fail("File '" + filename + "' not found.", 0);
 	}
 	
 	// Load all assembly and labels
 	while (!file.eof() && !file.fail()) {
 		// Remove comments and whitespace
 		string line;
+		bool success;
+		
 		getline(file, line);
+		++line_num;
 		
 		line = line.substr(0, line.find("//"));
 		boost::trim(line);
@@ -54,35 +60,47 @@ Assembler::Assembler(string filename)
 		}
 		
 		// Labels
-		if (line.front() == '(' && line.back() == ')') {
-			labels.insert(make_pair(line.substr(1, line.size() - 2), assembly.size()));
-			continue;
-		}
-		if (line.back() == ':') {
-			labels.insert(make_pair(line.substr(0, line.size() - 1), assembly.size()));
+		if (   (line.front() == '(' && line.back() == ')')
+		    || (line.back() == ':'))
+		{
+			string name = (line.back() == ':') ? line.substr(0, line.size() - 1) : line.substr(1, line.size() - 2);
+			tie(ignore, success) = labels.emplace(name, assembly.size());
+			if (!success) {
+				fail("Redeclaration of '" + name + "'.", line_num);
+			}
 			continue;
 		}
 		
 		// Variables
 		if (line.front() == '$') {
-			size_t var_pos = 16 - (++var_count);
-			auto var = parse_var(line);
+			size_t var_pos = M_SIZE - (++var_count);
+			auto var = parse_var(line, line_num);
 			
-			labels.insert(make_pair(var.first, var_pos));
+			tie(ignore, success) = labels.emplace(var.first, var_pos);
+			
+			if (!success) {
+				fail("Redeclaration of '" + var.first + "'.", line_num);
+				continue;
+			}
+			
 			_mcode[var_pos] = var.second;
 			
 			continue;
 		}
 		
-		assembly.push_back(line);
+		assembly.emplace(line_num, line);
+		
+		size_t msize = assembly.size() + var_count;
+		if (msize > M_SIZE) {
+			fail("Program too long.", line_num);
+			return;
+		}
 	}
 	
-	if (assembly.size() + var_count > 16) {
-		fail("Program too long: " + to_string(assembly.size()) + " bytes.");
-	}
-	
-	for (size_t i = 0; i < assembly.size(); ++i) {
-		_mcode[i] = stringtomcode(assembly[i]);
+	size_t i = 0;
+	for (auto it : assembly) {
+		_mcode[i] = stringtomcode(it.second, it.first);
+		++i;
 	}
 }
 
@@ -95,7 +113,7 @@ bool Assembler::good() const
 Assembler::operator bool() const
 { return !_fail; }
 
-byte Assembler::stringtomcode(string str)
+byte Assembler::stringtomcode(string str, size_t ln)
 {
 	byte mcode, arg;
 	boost::char_separator<char> func(" ");
@@ -108,7 +126,7 @@ byte Assembler::stringtomcode(string str)
 	}
 	// Opcode
 	else if (OPCODES.count(*next) == 0) {
-		fail("Opcode " + *next + " not found.");
+		fail("Opcode " + *next + " not found.", ln);
 		return 0;
 	}
 	else {
@@ -129,7 +147,7 @@ byte Assembler::stringtomcode(string str)
 	// Label or variable arg
 	 else {
 		if (labels.count(*next) == 0) {
-			fail("Label " + *next + " not found.");
+			fail("Identifier " + *next + " not found.", ln);
 			return 0;
 		}
 		
@@ -140,13 +158,18 @@ byte Assembler::stringtomcode(string str)
 	return mcode;
 }
 
-void Assembler::fail(string reason)
+void Assembler::fail(string reason, size_t ln)
 {
 	_fail = true;
+	
+	if (ln != 0) {
+		cerr << "Line " << ln << ": ";
+	}
+	
 	cerr << reason << endl;
 }
 
-auto Assembler::parse_var(string line) -> pair<string, byte>
+auto Assembler::parse_var(string line, size_t ln) -> pair<string, byte>
 {
 	boost::char_separator<char> func(" ");
 	boost::tokenizer<boost::char_separator<char>> tok(line, func);
@@ -159,7 +182,7 @@ auto Assembler::parse_var(string line) -> pair<string, byte>
 	
 	if (++next != tok.end() && ++next != tok.end()) {
 		if (!isdigit(next->front())) {
-			fail("Invlid value for variable: " + *next);
+			fail("Invlid value for variable: " + *next, ln);
 			return make_pair("", 0);
 		}
 		val = static_cast<byte>(stoi(*next, 0, 0));
