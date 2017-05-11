@@ -30,7 +30,7 @@ const byte M_SIZE = 16;
 Assembler::Assembler(string filename)
     : _fail(false)
 {
-	map<size_t, string> assembly;
+	vector<pair<size_t, string>> assembly;
 	
 	ifstream file(filename);
 	
@@ -88,7 +88,7 @@ Assembler::Assembler(string filename)
 			continue;
 		}
 		
-		assembly.emplace(line_num, line);
+		assembly.emplace_back(line_num, line);
 		
 		size_t msize = assembly.size() + var_count;
 		if (msize > M_SIZE) {
@@ -97,10 +97,8 @@ Assembler::Assembler(string filename)
 		}
 	}
 	
-	size_t i = 0;
-	for (auto it : assembly) {
-		_mcode[i] = stringtomcode(it.second, it.first);
-		++i;
+	for (size_t i = 0; i < assembly.size(); ++i) {
+		_mcode[i] = stringtomcode(assembly[i].second, assembly[i].first);
 	}
 }
 
