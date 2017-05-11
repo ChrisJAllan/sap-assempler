@@ -33,12 +33,12 @@ Example input file:
 	$I_INIT = 15
 	$i
 	INIT:
-		LDA $I_INIT // i = I_INIT;
-		STA $i
+		LDA I_INIT // i = I_INIT;
+		STA i
 	LOOP:
-		LDA $i      // i -= 2;
+		LDA i      // i -= 2;
 		SBI 0x2
-		STA $i
+		STA i
 		OUT
 		JGT LOOP    // if (i > 0) goto LOOP
 		JZ  LOOP    // else if (i == 0) goto LOOP
